@@ -1,0 +1,196 @@
+---
+entities:
+  - category: config
+    dps:
+      - id: 1
+        name: value
+        optional: true
+        type: base64
+    entity: text
+    hidden: true
+    translation_key: meal_plan
+  - dps:
+      - id: 2
+        name: button
+        optional: true
+        type: boolean
+    entity: button
+    name: Quick feed
+  - category: config
+    dps:
+      - id: 3
+        name: value
+        optional: true
+        range:
+          max: 60
+          min: 1
+        type: integer
+        unit: portions
+    entity: number
+    translation_key: manual_feed
+  - class: enum
+    dps:
+      - id: 4
+        mapping:
+          - dps_val: standby
+            value: standby
+          - dps_val: feeding
+            value: feeding
+          - dps_val: done
+            value: feeding_complete
+        name: sensor
+        type: string
+    entity: sensor
+    translation_key: status
+  - category: diagnostic
+    class: battery
+    dps:
+      - id: 10
+        name: sensor
+        type: integer
+        unit: '%'
+    entity: sensor
+  - category: diagnostic
+    class: battery_charging
+    dps:
+      - id: 11
+        mapping:
+          - dps_val: null
+            value: false
+        name: sensor
+        optional: true
+        type: boolean
+    entity: binary_sensor
+  - category: diagnostic
+    class: opening
+    dps:
+      - id: 12
+        mapping:
+          - dps_val: 'on'
+            value: false
+          - dps_val: 'off'
+            value: true
+        name: sensor
+        type: string
+    entity: binary_sensor
+    name: Cover
+  - category: diagnostic
+    class: problem
+    dps:
+      - id: 13
+        mapping:
+          - dps_val: 0
+            value: false
+          - dps_val: 4
+            value: false
+          - dps_val: 64
+            value: false
+          - value: true
+        name: sensor
+        type: bitfield
+      - id: 13
+        name: fault_code
+        type: bitfield
+      - id: 13
+        mapping:
+          - dps_val: 0
+            value: ok
+          - dps_val: 1
+            value: jammed
+          - dps_val: 2
+            value: food_low
+          - dps_val: 4
+            value: food_empty
+          - dps_val: 8
+            value: desiccant_low
+          - dps_val: 16
+            value: battery_low
+          - dps_val: 32
+            value: stuck
+          - dps_val: 64
+            value: battery_powered
+        name: description
+        type: bitfield
+    entity: binary_sensor
+  - category: diagnostic
+    dps:
+      - id: 13
+        mapping:
+          - dps_val: 4
+            value: true
+          - value: false
+        name: sensor
+        type: bitfield
+    entity: binary_sensor
+    translation_key: tank_empty
+  - category: diagnostic
+    class: plug
+    dps:
+      - id: 13
+        mapping:
+          - dps_val: 64
+            value: false
+          - value: true
+        name: sensor
+        type: bitfield
+    entity: binary_sensor
+  - dps:
+      - id: 14
+        mapping:
+          - dps_val: 0
+            value: null
+          - value: fed
+        name: event
+        type: integer
+      - id: 14
+        name: amount
+        type: integer
+    entity: event
+    name: Feed
+  - dps:
+      - id: 17
+        name: switch
+        type: boolean
+    entity: light
+  - category: config
+    dps:
+      - id: 23
+        name: switch
+        type: boolean
+    entity: switch
+    name: Slow feed
+  - category: config
+    dps:
+      - id: 24
+        name: button
+        optional: true
+        type: boolean
+    entity: button
+    hidden: true
+    translation_key: factory_reset
+  - category: config
+    dps:
+      - id: 26
+        name: switch
+        type: boolean
+    entity: switch
+    icon: 'mdi:scale-balance'
+    name: Weight calibration
+  - category: config
+    dps:
+      - id: 101
+        mapping:
+          - dps_val: strong_power
+            value: Full power
+          - dps_val: battery_power
+            value: Battery saver
+        name: option
+        type: string
+    entity: select
+    icon: 'mdi:signal'
+    name: Power mode
+name: Molly&Cody Smart Feeder Titan
+products:
+  - id: gh0lmtxb5fumm0ad
+    manufacturer: Molly&Cody
+    model: M&C Smart Feeder Titan WIFI
