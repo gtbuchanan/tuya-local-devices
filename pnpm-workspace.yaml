@@ -7,7 +7,7 @@ catalog:
   '@gtbuchanan/tsconfig': 0.1.1
   '@types/node': 26.0.1
   eslint: 10.6.0
-  jiti: 2.6.1
+  jiti: 2.7.0
   typescript: 6.0.3
 
 engineStrict: true
