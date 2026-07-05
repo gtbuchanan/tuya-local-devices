@@ -1,0 +1,29 @@
+/// Pre-commit config for this repo. Adopts the shared @gtbuchanan/hk-config
+/// `recommended` preset, adds eslint (lints the device YAML plus the JS/JSON
+/// config) and a guard that mise's generated tasks stay in sync. Tool versions
+/// come from mise.toml.
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+
+import "package://github.com/gtbuchanan/tooling/releases/download/hk-config@0.2.0/hk-config@0.2.0#/Defaults.pkl"
+
+// Spread the preset into a base mapping, then amend in a separate layer so
+// overrides apply cleanly under stricter Pkl builds.
+local baseSteps = new Mapping<String, Step> {
+  ...Defaults.recommended
+}
+
+local allSteps = (baseSteps) {
+  ["eslint"] {
+    check = "pnpm exec eslint --max-warnings=0 --no-warn-ignored {{files}}"
+    fix = "pnpm exec eslint --fix --max-warnings=0 --no-warn-ignored {{files}}"
+  }
+
+  // `gtb sync mise` generates mise.tasks.toml; guard its loader include and
+  // generated content against drift.
+  ["verify-mise"] {
+    glob = List("mise.toml", "mise.tasks.toml")
+    check = "gtb verify mise"
+  }
+}
+
+hooks = Defaults.hooksFor(allSteps)

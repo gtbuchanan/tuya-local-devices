@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@gtbuchanan/eslint-config": "catalog:",
+    "@gtbuchanan/tsconfig": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "jiti": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  }
+}

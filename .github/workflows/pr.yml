@@ -1,0 +1,20 @@
+---
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  pre-commit:
+    name: Pre-Commit
+    # The pre-commit eslint step shells out to `pnpm exec`, so it needs node_modules.
+    uses: gtbuchanan/tooling/.github/workflows/pre-commit.yml@main
+    with:
+      use-pnpm: true
+name: PR
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read

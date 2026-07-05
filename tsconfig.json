@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "extends": [
+    "@gtbuchanan/tsconfig/node.json"
+  ],
+  "include": [
+    "eslint.config.ts"
+  ]
+}

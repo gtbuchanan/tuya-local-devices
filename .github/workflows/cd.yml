@@ -1,0 +1,40 @@
+---
+jobs:
+  publish:
+    # Gated by the `release` environment: set required reviewers in repo
+    # settings → Environments → release for a manual approval gate, or leave it
+    # unprotected for hands-off publishing.
+    environment: release
+    name: Publish
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: gtbuchanan/tooling/.github/actions/mise-setup@main
+      - env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_VERSION: ${{ inputs.upstream_version }}
+        # test:deps installs the harness (reused leaf); build:ci gates the
+        # publish — a malformed device or upstream schema change fails here
+        # before release runs.
+        run: |
+          mise run test:deps
+          mise run build:ci
+          mise run release
+name: CD
+
+on:
+  workflow_call:
+    inputs:
+      upstream_version:
+        default: ''
+
+        description: Upstream tuya-local release to build + publish (empty = latest).
+        required: false
+        type: string
+permissions:
+  contents: read

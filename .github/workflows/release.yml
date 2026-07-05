@@ -1,0 +1,119 @@
+---
+jobs:
+  cd:
+    if: needs.detect.outputs.fresh == 'true' && needs.ci.result == 'success'
+    name: CD
+    needs: [detect, ci]
+    permissions:
+      contents: write
+
+    uses: ./.github/workflows/cd.yml
+    with:
+      upstream_version: ${{ needs.detect.outputs.version }}
+  # Re-run CI as a publish gate, pinned to the version cd will publish.
+  ci:
+    if: needs.detect.outputs.fresh == 'true'
+    name: CI
+    needs: detect
+    uses: ./.github/workflows/ci.yml
+    with:
+      upstream_version: ${{ needs.detect.outputs.version }}
+
+  detect:
+    name: Detect
+    outputs:
+      fresh: ${{ steps.gate.outputs.fresh }}
+      version: ${{ steps.resolve.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        id: resolve
+        name: Resolve latest upstream release
+        run: |
+          set -eu
+          v=$(gh api repos/make-all/tuya-local/releases/latest --jq .tag_name)
+          case "$v" in
+            [0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "unexpected version string: '$v'" >&2; exit 1 ;;
+          esac
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - env:
+          EVENT: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.resolve.outputs.version }}
+        id: gate
+        name: Gate scheduled runs on a new upstream
+        run: |
+          set -eu
+          # push / dispatch always publish; schedule only when no release yet
+          # exists for this upstream base.
+          if [ "$EVENT" != schedule ]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          esc=$(printf '%s' "$VERSION" | sed 's/[.[\*^$]/\\&/g')
+          existing=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 \
+            --json tagName --jq '.[].tagName' | grep -E "^${esc}\.[0-9]+$" || true)
+          if [ -n "$existing" ]; then
+            echo "Upstream $VERSION already published — skipping."
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Upstream $VERSION is new — publishing."
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # File a tracked, deduplicated issue when an unattended scheduled rebuild
+  # breaks; push/dispatch failures surface directly on the run.
+  notify:
+    if: >-
+      always() && github.event_name == 'schedule'
+      && needs.detect.outputs.fresh == 'true'
+      && (needs.ci.result == 'failure' || needs.cd.result == 'failure')
+    name: Notify
+    needs: [detect, ci, cd]
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          VERSION: ${{ needs.detect.outputs.version }}
+        name: Open an issue (deduped by title)
+        run: |
+          set -eu
+          title="Rebuild against upstream $VERSION failed"
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "in:title \"$title\"" --json number --jq 'length')
+          if [ "$open" -gt 0 ]; then
+            echo "An open issue with this title already exists — not duplicating."
+            exit 0
+          fi
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body \
+          "The scheduled rebuild against upstream tuya-local \`$VERSION\` failed.
+
+          The most likely cause is the device-config schema tests catching a
+          break — either a custom device file in \`overlay/devices/\` or an
+          upstream schema change the overlay no longer satisfies.
+
+          Failed run: $RUN_URL"
+name: Release
+
+# The single publish pipeline. Runs on:
+#   - push to main      → rebuild on the latest upstream with the new overlay
+#   - schedule          → rebuild when upstream cuts a release we haven't built
+#   - workflow_dispatch → manual rebuild
+# All publishes go through this one workflow, so the release tag's build number
+# (github.run_number) is a single monotonic sequence.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read

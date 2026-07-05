@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#MISE description="Install upstream's python test harness (native pip, or the container image on Windows)"
+#MISE depends=["compile"]
+# Keyed on the upstream pyproject/manifest (which define the deps). compile
+# re-extracts from a cached tarball with tar-preserved mtimes, so these are
+# stable across device-only edits and this skips reinstalling unchanged deps.
+#MISE sources=["dist/upstream/pyproject.toml", "dist/upstream/custom_components/tuya_local/manifest.json", "Dockerfile", "mise-tasks/test/deps"]
+#MISE outputs=["dist/.test-deps"]
+#
+# Home Assistant can't import on Windows (no fcntl), so there the suites run in
+# a Linux container — build that image with the deps baked in. Linux (the CI
+# path) and macOS install natively into the pinned interpreter. Reused by
+# prepare (locally) and directly by CI, so the install logic lives here only.
+set -euo pipefail
+
+case "$(uname -s)" in
+MINGW* | MSYS* | CYGWIN*)
+  docker build --quiet -t tuya-local-devices-test -f Dockerfile dist/upstream >/dev/null
+  ;;
+*)
+  (
+    cd dist/upstream
+    mise exec -- python -m pip install --quiet --upgrade pip
+    mise exec -- python -m pip install --quiet --group dev
+    jq -r '.requirements[]?' custom_components/tuya_local/manifest.json |
+      xargs -r mise exec -- python -m pip install --quiet
+  )
+  ;;
+esac
+
+# Marker for mise's outputs change-detection (the real install lands in the
+# mise interpreter / docker image, which aren't files mise can track).
+: >dist/.test-deps

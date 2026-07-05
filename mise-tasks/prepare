@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Bootstrap the dev environment (pnpm + python test deps)"
+#MISE depends=["pnpm:install", "test:deps"]
+
+# The reserved worktrunk post-start task — an aggregate of the per-worktree
+# setup that doesn't carry over to a fresh worktree (node_modules, the python
+# test harness). The work lives in the leaf tasks so CI can reuse them; nothing
+# depends on prepare.
