@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#MISE description="Package the merged component and publish a GitHub release (CI; needs GH_TOKEN)"
+#
+# Computes the release tag <upstream>.<build> (build = next free 4th component
+# for this upstream base), stamps it as the Home Assistant-visible manifest
+# version, copies upstream's MIT license into the component for redistribution,
+# zips the component with manifest.json at the archive root (HACS zip_release),
+# and publishes a GitHub release with the zip attached. The domain and manifest
+# name are left untouched so Home Assistant treats this as the upstream
+# integration.
+set -euo pipefail
+
+domain=tuya_local
+upstream=$(cat dist/upstream/.upstream-version)
+component="dist/upstream/custom_components/${domain}"
+
+# Build number is the GitHub Actions run number — a single monotonic sequence
+# because every publish goes through the one release workflow.
+tag="${upstream}.${BUILD_NUMBER:?BUILD_NUMBER is required (GitHub Actions run number)}"
+echo "Publishing ${tag} (upstream ${upstream})"
+
+tmp=$(mktemp)
+jq --arg v "$tag" '.version = $v' "${component}/manifest.json" >"$tmp"
+mv "$tmp" "${component}/manifest.json"
+cp dist/upstream/LICENSE.md "${component}/LICENSE.md"
+
+zip="${PWD}/dist/${domain}.zip"
+rm -f "$zip"
+(cd "$component" && zip -r -q "$zip" . -x '*.pyc' -x '*/__pycache__/*')
+
+devices=$(cd overlay/devices && find . -maxdepth 1 -name '*.yaml' -printf '- %f\n' | sort || true)
+notes=$(
+  cat <<EOF
+Upstream base: [\`${upstream}\`](https://github.com/${GITHUB_REPOSITORY:-make-all/tuya-local}/releases/tag/${upstream})
+
+Built from upstream tuya-local with these custom device configs merged in:
+
+${devices:-_(none)_}
+
+Install/update via HACS as a custom repository — this unpacks into
+\`custom_components/${domain}/\` exactly like the upstream integration.
+EOF
+)
+
+gh release create "$tag" "$zip" \
+  --title "${tag} (upstream ${upstream})" \
+  --notes "$notes"

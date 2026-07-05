@@ -1,0 +1,7 @@
+*.tsbuildinfo
+dist/
+node_modules/
+
+# Python bytecode from the device-config validation run
+__pycache__/
+*.pyc

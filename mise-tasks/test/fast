@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#MISE description="Validate the merged device configs against upstream's schema tests (fast integration)"
+#MISE depends=["compile"]
+#
+# Runs upstream's test_device_config + test_translations suites over the merged
+# tree. The harness is installed by test:deps (run by prepare locally, or by CI
+# directly), so this just runs pytest. Home Assistant imports fcntl (POSIX-only),
+# so on Windows the suites run in the Linux container test:deps built; Linux (the
+# CI path) and macOS run natively.
+set -euo pipefail
+
+case "$(uname -s)" in
+MINGW* | MSYS* | CYGWIN*)
+  host=$(cd dist/upstream && { pwd -W 2>/dev/null || pwd; })
+  MSYS_NO_PATHCONV=1 docker run --rm -v "${host}:/app" tuya-local-devices-test
+  ;;
+*)
+  cd dist/upstream
+  mise exec -- python -m pytest tests/test_device_config.py tests/test_translations.py -q
+  ;;
+esac

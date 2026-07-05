@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#MISE description="Compile the merged component: download upstream tuya-local (UPSTREAM_VERSION, default latest) and overlay device files"
+#MISE sources=["overlay/**/*", "mise-tasks/compile"]
+#MISE outputs=["dist/.compiled"]
+#
+# Extracts the upstream release into dist/upstream (git-ignored build scratch)
+# and copies overlay/ over custom_components/tuya_local/. overlay/ mirrors the
+# component tree, so overlay/devices/*.yaml land beside the bundled configs. The
+# tree is rebuilt from scratch each run (so a removed overlay file doesn't
+# linger), but the tarball is cached per version to skip re-downloading, and tar
+# restores the archive's mtimes, so upstream file mtimes stay stable across
+# re-extracts and test:deps can skip reinstalling unchanged deps. Set
+# UPSTREAM_VERSION to pin a tag; leave it empty for latest.
+set -euo pipefail
+
+repo=make-all/tuya-local
+tag="${UPSTREAM_VERSION:-}"
+if [ -z "$tag" ]; then
+  tag=$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" | jq -r .tag_name)
+fi
+
+tarball="dist/.cache/tuya-local-${tag}.tar.gz"
+if [ ! -f "$tarball" ]; then
+  echo "Downloading upstream ${tag}"
+  mkdir -p dist/.cache
+  curl -fsSL "https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz" -o "$tarball"
+fi
+
+rm -rf dist/upstream
+mkdir -p dist/upstream
+tar -xzf "$tarball" -C dist/upstream --strip-components=1
+# overlay/ mirrors custom_components/tuya_local/ (overlay/devices/*.yaml, etc.).
+cp -a overlay/. dist/upstream/custom_components/tuya_local/
+printf '%s\n' "$tag" >dist/upstream/.upstream-version
+
+mkdir -p dist
+: >dist/.compiled

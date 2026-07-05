@@ -1,0 +1,31 @@
+---
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: gtbuchanan/tooling/.github/actions/mise-setup@main
+      - env:
+          UPSTREAM_VERSION: ${{ inputs.upstream_version }}
+        # test:deps compiles the merged tree and installs upstream's test
+        # harness (the same leaf task prepare uses locally); build:ci then runs
+        # compile (cached) + the fast tests.
+        run: |
+          mise run test:deps
+          mise run build:ci
+name: CI
+
+on:
+  workflow_call:
+    inputs:
+      upstream_version:
+        default: ''
+
+        description: Upstream tuya-local release to build + test (empty = latest).
+        required: false
+        type: string
+permissions:
+  contents: read
