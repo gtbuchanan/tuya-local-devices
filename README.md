@@ -24,6 +24,12 @@ you can switch back to the official integration at any time (see
 - `overlay/` mirrors the `custom_components/tuya_local/` tree. Your device
   files live in `overlay/devices/`, but anything else in the component
   (icons, translations) can be overridden the same way.
+- `custom_components/tuya_local/manifest.json` is a stub, not vendored
+  upstream. HACS validates an integration by reading the release tag's git
+  tree for `custom_components/<domain>/manifest.json` to discover the domain —
+  `zip_release` does not skip that check. The stub satisfies it and declares
+  the same `tuya_local` domain; the real component ships in the release zip,
+  so the stub is never installed. Do not delete it.
 - The `compile` task fetches an upstream release into `dist/upstream/` and
   copies `overlay/` over it.
 - The `test:fast` task runs upstream's `test_device_config` and
