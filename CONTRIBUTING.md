@@ -42,6 +42,30 @@ skips work that hasn't changed.
 1. Open a PR. `pr.yml` runs the same checks, plus the hk hooks.
 1. Merge. `release.yml` publishes a new build on the current latest upstream.
 
+### Recovering DPs from an existing localtuya config
+
+If the device already runs under the localtuya integration, its stored config
+holds the DP → entity mapping — the hard part of writing a device file. Extract
+just the entities and DP dump (no secrets) from Home Assistant's config storage:
+
+```sh
+jq '.data.entries[]
+    | select(.domain=="localtuya")
+    | .data.devices
+    | map_values({
+        friendly_name: (.entities[0].friendly_name // .friendly_name),
+        dps_strings,
+        entities: [.entities[] | del(.local_key, .device_id)]
+      })' \
+  config/.storage/core.config_entries
+```
+
+Descending only into `.data.devices` excludes the account-level `client_id` and
+`client_secret`, and `del(.local_key, .device_id)` strips the per-device
+secrets, so the output is safe to share. Note that `dps_strings` can include
+cloud-backfilled data points that aren't emitted over the local protocol —
+verify against a live debug log before relying on one.
+
 ## CI/CD
 
 - `pr.yml` — pull-request checks: reusable `ci.yml` (compile + test) plus the
