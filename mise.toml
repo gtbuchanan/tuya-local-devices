@@ -60,7 +60,7 @@ description = "Run all tiers: compile + every test tier"
 # validator). python + jq drive the device-config build/validation tasks.
 [tools]
 actionlint = "1.7.12"
-hk = "1.48.0"
+hk = "1.51.0"
 jq = "1.8.2"
 node = "24.18.0"
 "npm:@gtbuchanan/cli" = "0.2.0"
