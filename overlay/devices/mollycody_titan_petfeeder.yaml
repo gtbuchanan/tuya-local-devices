@@ -2,6 +2,20 @@
 entities:
   - category: config
     dps:
+      # Base64 of up to 10 repetitions of a 5-byte meal record, per the
+      # format documented on the sibling arlec_5l/catit_pixi feeders.
+      # Unverified on this unit — the dp is not returned by a status
+      # query, so no live value has been observed to decode against:
+      # - Date (1 bit per day Monday -> Sunday, padded with 0 on the MSB).
+      #    Ex: Monday, Wednesday, Sunday -> 0b01010001
+      # - Hour
+      # - Minute
+      # - Feed portions
+      # - Enable/Disabled
+      # The schedule demonstrably runs on the device, so the value
+      # exists, but nothing local reaches it: the dp is absent from
+      # status replies and the device ignores an explicit dp query, so
+      # enabling this entity yields an empty box.
       - id: 1
         name: value
         optional: true
@@ -15,7 +29,12 @@ entities:
         optional: true
         type: boolean
     entity: button
-    name: Quick feed
+    icon: 'mdi:food-drumstick'
+    # Dispenses exactly one portion, which is a small fraction of a
+    # normal meal here — named for what it does rather than upstream's
+    # "Quick feed", which reads like a full serving. Singular here
+    # against the plural on dp 3, which takes a count.
+    name: Dispense portion
   - category: config
     dps:
       - id: 3
@@ -27,7 +46,15 @@ entities:
         type: integer
         unit: portions
     entity: number
-    translation_key: manual_feed
+    # Icon set explicitly because naming the entity drops the
+    # manual_feed translation key, which is what supplied it upstream.
+    icon: 'mdi:food-drumstick'
+    # Writing this dp dispenses immediately — it is a command, not a
+    # stored setting. Presented as a box rather than the default slider
+    # so it takes a typed, committed value: dragging a slider would feed
+    # the animals on every accidental touch.
+    mode: box
+    name: Dispense portions
   - class: enum
     dps:
       - id: 4
@@ -46,24 +73,35 @@ entities:
     class: battery
     dps:
       - id: 10
+        mapping:
+          # The feeder only reports a real percentage while running on
+          # battery; on mains it sends a constant 0. Left alone that
+          # surfaces as a permanently flat battery and trips HA's
+          # low-battery alerting, so report no value instead. A genuine
+          # 0% reading is lost, but the feeder is dead by then anyway.
+          - dps_val: 0
+            value: null
         name: sensor
         type: integer
         unit: '%'
     entity: sensor
-  - category: diagnostic
-    class: battery_charging
-    dps:
-      - id: 11
-        mapping:
-          - dps_val: null
-            value: false
-        name: sensor
-        optional: true
-        type: boolean
-    entity: binary_sensor
+  # No entity for dp 11 (charge_state). Upstream exposes it as a
+  # battery_charging binary_sensor defaulting to false, but this feeder
+  # has no rechargeable cell — it runs on mains or on battery — and the
+  # dp has never been transmitted. Reinstate it if one is ever observed.
   - category: diagnostic
     class: opening
     dps:
+      # Never once observed to change: 'on' across thousands of polls,
+      # through every feed cycle, and with both the lid and the whole
+      # food bin removed. Whatever it covers is not either of those, and
+      # may be something this firmware never actually updates. The
+      # upstream polarity is kept — 'on' as in the cover being on, hence
+      # closed — since it reads correctly and nothing contradicts it.
+      # Registered disabled: it is a real dp, just not a useful one.
+      # Note that it goes absent after a power cycle and, never
+      # changing, has nothing to announce afterwards — so enabling this
+      # entity may well leave it at unknown indefinitely.
       - id: 12
         mapping:
           - dps_val: 'on'
@@ -73,26 +111,24 @@ entities:
         name: sensor
         type: string
     entity: binary_sensor
+    hidden: true
     name: Cover
   - category: diagnostic
-    class: problem
+    class: enum
     dps:
+      # Reports the fault as readable text rather than upstream's generic
+      # problem boolean, so a notification can use the state directly.
+      # Bitfield matching is a bitwise AND and the first match wins, so
+      # with several bits set only the lowest is named — fault_code below
+      # carries the full value. The trailing default catches any bit the
+      # device sets that is not documented here, which would otherwise
+      # go unreported.
       - id: 13
         mapping:
-          - dps_val: 0
-            value: false
-          - dps_val: 4
-            value: false
-          - dps_val: 64
-            value: false
-          - value: true
-        name: sensor
-        type: bitfield
-      - id: 13
-        name: fault_code
-        type: bitfield
-      - id: 13
-        mapping:
+          # Absent dp means no reading, not an unrecognised fault -- the
+          # trailing default would otherwise report one.
+          - dps_val: null
+            value: null
           - dps_val: 0
             value: ok
           - dps_val: 1
@@ -107,51 +143,85 @@ entities:
             value: battery_low
           - dps_val: 32
             value: stuck
-          - dps_val: 64
-            value: battery_powered
-        name: description
+          # No mapping for bit 64. Upstream labels it battery_powered,
+          # but this feeder left it clear while running on battery
+          # during a deliberate mains disconnection, so that meaning is
+          # disproven here. It falls through to unknown_fault, which is
+          # the honest answer until something sets it.
+          - value: unknown_fault
+        name: sensor
         type: bitfield
-    entity: binary_sensor
-  - category: diagnostic
-    dps:
+      - id: 13
+        name: fault_code
+        type: bitfield
+    entity: sensor
+    name: Fault
+  - dps:
+      # 2 (food_low) | 4 (food_empty). Upstream watches bit 4 alone, but
+      # this feeder reports bit 2 for an empty hopper and has never been
+      # observed to set bit 4 — not while empty, and not on a dispense
+      # attempt that ran dry. Matching both keeps the sensor meaningful
+      # here without assuming bit 4 is unused.
+      #
+      # This is the only dp 13 bit whose meaning has been confirmed on
+      # this device, so it is the only one given a dedicated entity. The
+      # rest are decoded by the Fault sensor above, where a wrong guess
+      # is visible as text next to the raw fault_code rather than
+      # asserted as a named binary state.
       - id: 13
         mapping:
-          - dps_val: 4
+          # The dp goes absent across a power cycle or a reload and only
+          # returns when the fault state changes. Without this the
+          # catch-all below answers "OK" for "no reading", which is the
+          # one wrong answer a food sensor must not give.
+          - dps_val: null
+            value: null
+          - dps_val: 6
             value: true
           - value: false
         name: sensor
         type: bitfield
     entity: binary_sensor
+    # Not diagnostic: whether there is food to dispense is the feeder's
+    # primary state, not a fact about the device's own health.
+    #
+    # The tank_empty translation key is kept for its state strings only
+    # -- OK and Low, rather than the bare On/Off a classless binary
+    # sensor would show. The name overrides that key's own "Tank", which
+    # says nothing about what is in it. A problem device class was
+    # considered and dropped: it would force HA's fixed OK/Problem
+    # wording over the clearer OK/Low.
+    name: Food level
     translation_key: tank_empty
   - category: diagnostic
-    class: plug
     dps:
-      - id: 13
-        mapping:
-          - dps_val: 64
-            value: false
-          - value: true
+      # Upstream exposes this as an event entity, but the dp neither
+      # pushes on change nor comes back from a status query, so that
+      # event cannot fire — it never did across days of real feeds. A
+      # sensor at least holds the portion count if the value ever does
+      # arrive, and cannot misfire the way a stale event would. Reported
+      # 25 at pairing, matching the configured schedule, so it appears
+      # to hold the last feed size.
+      - class: measurement
+        id: 14
         name: sensor
-        type: bitfield
-    entity: binary_sensor
-  - dps:
-      - id: 14
-        mapping:
-          - dps_val: 0
-            value: null
-          - value: fed
-        name: event
         type: integer
-      - id: 14
-        name: amount
-        type: integer
-    entity: event
-    name: Feed
-  - dps:
+        unit: portions
+    entity: sensor
+    name: Last feed
+  - category: config
+    dps:
       - id: 17
         name: switch
         type: boolean
-    entity: light
+    entity: switch
+    # Keeps the feeder's screen permanently lit; off leaves it to
+    # illuminate only on use. Upstream models this as a light, which
+    # puts a lamp with brightness semantics in the device's main
+    # controls and sweeps it into "all lights off" automations. It is a
+    # display preference, so it is a config switch here.
+    icon: 'mdi:television-ambient-light'
+    name: Always-on display
   - category: config
     dps:
       - id: 23
@@ -176,19 +246,26 @@ entities:
     entity: switch
     icon: 'mdi:scale-balance'
     name: Weight calibration
-  - category: config
+  - category: diagnostic
+    class: enum
     dps:
+      # Reports which supply the feeder is running on, not a setting.
+      # Upstream models this as a select; writing strong_power to the
+      # device was accepted without error and silently ignored, and the
+      # dp only ever changes on its own (it reported battery_power
+      # throughout a mains outage). Duplicates the plug binary_sensor,
+      # which derives the same fact from dp 13 bit 64.
       - id: 101
         mapping:
           - dps_val: strong_power
-            value: Full power
+            value: mains
           - dps_val: battery_power
-            value: Battery saver
-        name: option
+            value: battery
+        name: sensor
         type: string
-    entity: select
-    icon: 'mdi:signal'
-    name: Power mode
+    entity: sensor
+    icon: 'mdi:power-plug'
+    name: Power source
 name: Molly&Cody Smart Feeder Titan
 products:
   - id: gh0lmtxb5fumm0ad
