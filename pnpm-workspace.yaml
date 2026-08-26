@@ -8,7 +8,7 @@ catalog:
   '@types/node': 26.2.0
   eslint: 10.9.0
   jiti: 2.6.1
-  typescript: 6.0.3
+  typescript: 7.0.2
 
 engineStrict: true
 
