@@ -66,13 +66,21 @@ jobs:
 
   # File a tracked, deduplicated issue when an unattended scheduled rebuild
   # breaks; push/dispatch failures surface directly on the run.
+  #
+  # Only a CI failure files one. CI runs the device-config and translation
+  # suites, which is the break nobody is watching for. A CD failure is either
+  # the `release` environment approval expiring at GitHub's 30-day ceiling,
+  # which is the gate working rather than a break, or the `release` task failing
+  # on a run someone just approved and is therefore watching. Strip the required
+  # reviewers from that environment and publishing becomes unattended too, at
+  # which point cd belongs back in `needs`.
   notify:
     if: >-
       always() && github.event_name == 'schedule'
       && needs.detect.outputs.fresh == 'true'
-      && (needs.ci.result == 'failure' || needs.cd.result == 'failure')
+      && needs.ci.result == 'failure'
     name: Notify
-    needs: [detect, ci, cd]
+    needs: [detect, ci]
     permissions:
       contents: read
       issues: write
@@ -93,11 +101,10 @@ jobs:
             exit 0
           fi
           gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body \
-          "The scheduled rebuild against upstream tuya-local \`$VERSION\` failed.
+          "The device-config tests failed against upstream tuya-local \`$VERSION\`.
 
-          The most likely cause is the device-config schema tests catching a
-          break — either a custom device file in \`overlay/devices/\` or an
-          upstream schema change the overlay no longer satisfies.
+          Either a device file in \`overlay/devices/\` is malformed, or an upstream
+          schema change the overlay no longer satisfies.
 
           Failed run: $RUN_URL"
 name: Release
