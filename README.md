@@ -12,8 +12,13 @@ top, validates the result against upstream's own schema tests, and publishes a
 GitHub release you install through HACS. Upstream is never vendored into the
 repo, so the tracked diff is just your devices.
 
-This exists to bridge the gap until upstream ships first-class custom-device
-support ([make-all/tuya-local#2290](https://github.com/make-all/tuya-local/issues/2290)).
+Upstream declines to load device configs from outside the component, so this
+repo is permanent. In
+[make-all/tuya-local#2290](https://github.com/make-all/tuya-local/issues/2290),
+labeled `wontfix`, the maintainer reads a private config directory as
+encouraging people to hoard configs rather than share them. A device leaves
+`overlay/devices/` only by landing upstream.
+
 Because the integration `domain` and manifest `name` are left untouched, the
 published build is indistinguishable from upstream inside Home Assistant, and
 you can switch back to the official integration at any time (see
