@@ -59,7 +59,7 @@ description = "Run all tiers: compile + every test tier"
 # drive the device-config build/validation tasks.
 [tools]
 actionlint = "1.7.12"
-hk = "2.0.0"
+hk = "2.0.1"
 jq = "1.8.2"
 node = "24.21.0"
 "npm:@gtbuchanan/cli" = "0.7.1"
