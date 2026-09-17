@@ -63,7 +63,14 @@ hk = "2.0.0"
 jq = "1.8.2"
 node = "24.21.0"
 "npm:@gtbuchanan/cli" = "0.7.1"
-"npm:renovate" = "43.231.2"
+# Exempt transitive `@yarnpkg/libzip@3.2.2` from the no-downgrade trust policy:
+# it is a benign manual publish missing the provenance attestation its CI-built
+# predecessor (3.2.0) had, which otherwise fails the install outright. Pinned to
+# the exact version rather than the bare name so the exemption expires the
+# moment a different release is resolved, instead of standing forever.
+"npm:renovate" = { trust_policy_excludes = [
+  "@yarnpkg/libzip@3.2.2",
+], version = "44.97.2" }
 pkl = "0.32.1"
 pnpm = "12.4.1"
 python = "3.14.7"
