@@ -1,0 +1,99 @@
+---
+entities:
+  - class: outlet
+    dps:
+      - id: 1
+        name: switch
+        type: boolean
+      - id: 6
+        name: add_ele
+        optional: true
+        type: integer
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '1'
+  - class: outlet
+    dps:
+      - id: 2
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '2'
+  - category: diagnostic
+    class: current
+    dps:
+      - class: measurement
+        force: true
+        id: 7
+        mapping:
+          - scale: 1000
+        name: sensor
+        type: integer
+        unit: A
+    entity: sensor
+  - category: diagnostic
+    class: power
+    dps:
+      - class: measurement
+        force: true
+        id: 8
+        mapping:
+          - scale: 10
+        name: sensor
+        type: integer
+        unit: W
+    entity: sensor
+  - category: diagnostic
+    class: voltage
+    dps:
+      - class: measurement
+        force: true
+        id: 9
+        mapping:
+          - scale: 10
+        name: sensor
+        type: integer
+        unit: V
+    entity: sensor
+  - category: config
+    dps:
+      - id: 10
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '1'
+  - category: config
+    dps:
+      - id: 11
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '2'
+name: Dual power monitoring smartplug
+# Body copied from upstream's dual_power_monitor_smartplug, which this
+# device matches. It is a copy rather than an override so that the
+# generic config stays as upstream maintains it, and so corrections
+# made for this plug stay separate from it: a config that fits a device
+# today can diverge from it later, and an override leaves no way to
+# tell which lines are ours.
+#
+# The listing gives the manufacturer as "Chn Mfr." and the brand as
+# "Generic", which are placeholders; its description brands the plug
+# GEEX throughout, and US001 is the model it states.
+products:
+  - id: 58cd8OIt2PCGLzjj
+    manufacturer: GEEX
+    model: US001

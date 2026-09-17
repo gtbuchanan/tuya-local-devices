@@ -1,0 +1,54 @@
+---
+entities:
+  - class: outlet
+    dps:
+      - id: 1
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '1'
+  - class: outlet
+    dps:
+      - id: 2
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '2'
+  - category: config
+    dps:
+      - id: 10
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '1'
+  - category: config
+    dps:
+      - id: 11
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '2'
+# A two-socket plug with a countdown timer per socket and no metering
+# hardware. Distinct from geex_us001_smartplug, which is the same shape
+# plus current, power and voltage on dps 7, 8 and 9: matching this
+# device against that config makes tuya-local force-query three dps the
+# firmware does not implement, and the replies decode as garbage.
+name: Dual smartplug with timers
+products:
+  - id: 3J6B2gu8SuBTFPL5
+    manufacturer: Avatar Controls
+    model: AWP12L
