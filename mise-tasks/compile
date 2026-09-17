@@ -16,7 +16,18 @@ set -euo pipefail
 repo=make-all/tuya-local
 tag="${UPSTREAM_VERSION:-}"
 if [ -z "$tag" ]; then
-  tag=$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" | jq -r .tag_name)
+  # Authenticate the lookup when a token is around. Anonymous api.github.com
+  # allows 60 requests an hour per IP and CI runners share a NAT pool, so an
+  # unauthenticated call 403s on a budget strangers spent, failing the build
+  # with nothing wrong in this repo. A token lifts the ceiling to 5000. A local
+  # run without one keeps the anonymous budget, which is ample for one machine
+  # against a tarball cached per version.
+  auth=()
+  if [ -n "${GH_TOKEN:-}" ]; then
+    auth=(-H "Authorization: Bearer ${GH_TOKEN}")
+  fi
+  tag=$(curl -fsSL "${auth[@]}" "https://api.github.com/repos/${repo}/releases/latest" |
+    jq -r .tag_name)
 fi
 
 tarball="dist/.cache/tuya-local-${tag}.tar.gz"
