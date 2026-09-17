@@ -1,18 +1,15 @@
 # Project tooling for developing this repo. Mirrors gtbuchanan/tooling's mise
 # convention so local pre-commit runs match the shared hk preset.
 
-# Hard floor for minimum_release_age_excludes (below): older mise silently
-# ignores the field instead of failing, so enforce the version.
-min_version = "2026.6.2"
+# Hard floor for the packslip-backed hk entry in mise.lock, which mise writes
+# and re-resolves from 2026.9.5, and for minimum_release_age_excludes (below),
+# which older mise silently ignores instead of failing.
+min_version = "2026.9.5"
 
 [env]
 # hk wraps hook steps in `mise x` so mise-managed tools resolve without
 # activation.
 HK_MISE = "1"
-# Route pkl through the external CLI (pinned in [tools]) instead of hk's
-# embedded evaluator, whose leniency lets configs pass that the strict CLI
-# rejects. Keeps local and CI evaluation identical.
-HK_PKL_BACKEND = "pkl"
 
 [hooks]
 # Installs hk's git hooks (pre-commit) on `mise install`.
@@ -55,12 +52,14 @@ description = "The CI build: compile + fast tests (no slow tiers)"
 depends = ["test"]
 description = "Run all tiers: compile + every test tier"
 
-# hk runs the lint hooks; pkl evaluates hk.pkl; node/pnpm back eslint and the
-# npm: tools (gtb drives the hk:* tasks, renovate supplies its config
-# validator). python + jq drive the device-config build/validation tasks.
+# hk runs the lint hooks; pkl is pinned ahead of its consumer, for gtb checking
+# hk.pkl as a root task (hk 2 evaluates Pkl with its own pklr, so nothing here
+# shells out to the CLI yet); node/pnpm back eslint and the npm: tools (gtb
+# drives the hk:* tasks, renovate supplies its config validator). python + jq
+# drive the device-config build/validation tasks.
 [tools]
 actionlint = "1.7.12"
-hk = "1.48.0"
+hk = "2.0.0"
 jq = "1.8.2"
 node = "24.21.0"
 "npm:@gtbuchanan/cli" = "0.7.1"
