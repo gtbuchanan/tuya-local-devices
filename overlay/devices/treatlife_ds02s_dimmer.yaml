@@ -1,0 +1,86 @@
+---
+entities:
+  - dps:
+      - id: 1
+        name: switch
+        type: boolean
+      - id: 2
+        name: brightness
+        range:
+          max: 1000
+          min: 10
+        type: integer
+    entity: light
+  - category: config
+    dps:
+      # brightness_min_1, over the same 10-1000 range as dp 2 and
+      # scaled here to a percentage. A write takes, unlike the same dp
+      # on the dimmer behind upstream's feit_dimmer, but the device
+      # answers it by setting dp 2 to the same value: raising the
+      # minimum to 15% leaves the lamp sitting at 15% until a
+      # brightness is set again. Exposed as a number rather than as the
+      # light entity's minimum_brightness dp, which nothing in the
+      # component reads.
+      - id: 3
+        mapping:
+          - scale: 10
+        name: value
+        range:
+          max: 1000
+          min: 10
+        type: integer
+        unit: '%'
+    entity: number
+    icon: 'mdi:lightbulb-on-60'
+    name: Minimum brightness
+  - category: config
+    dps:
+      # led_type_1, the dimming curve for the lamp wired to the switch.
+      # The device declares LED, incandescent and halogen, and reports
+      # LED over the local protocol. Tuya's
+      # standard instruction set for the category offers only
+      # incandescent and halogen, which is the discrepancy behind
+      # feit_dimmer mapping halogen to "LED"; the local protocol
+      # carries the device's own values, so all three are mapped.
+      - id: 4
+        mapping:
+          - dps_val: LED
+            value: LED
+          - dps_val: halogen
+            value: Halogen
+          - dps_val: incandescent
+            value: Incandescent
+        name: option
+        type: string
+    entity: select
+    icon: 'mdi:lightbulb-variant'
+    name: Light type
+  - category: config
+    dps:
+      - id: 102
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer
+# No upstream config covers this dimmer. The closest, feit_dimmer,
+# stops at dp 3, maps the vendor's halogen value to "LED" and leaves
+# LED itself unmapped.
+#
+# The device also returns dp 104, which the vendor names indicator and
+# declares an integer 0-2 without saying what the values mean; every
+# unit here reports 1. Upstream's treatlife_ds03v2_fanlight reads the
+# same dp on the DS03 as an indicator brightness. Nothing here
+# confirms that, so 104 stays unmapped rather than becoming a control
+# whose positions are a guess.
+#
+# The vendor declares dps 101 (wake_up), 103 (bright_value_3) and 105
+# (random_time) as well; none of the three appears in a local status
+# reply.
+name: Dimmer switch
+products:
+  - id: yxpnrgk9xzqwa1jm
+    manufacturer: Treatlife
+    model: DS02S
