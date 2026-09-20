@@ -1,0 +1,170 @@
+---
+entities:
+  - class: outlet
+    dps:
+      - id: 1
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '1'
+  - class: outlet
+    dps:
+      - id: 2
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '2'
+  - class: outlet
+    dps:
+      - id: 3
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '3'
+  - class: outlet
+    dps:
+      - id: 4
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '4'
+  - class: outlet
+    dps:
+      - id: 5
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '5'
+  - class: outlet
+    dps:
+      - id: 6
+        name: switch
+        type: boolean
+    entity: switch
+    translation_key: outlet_x
+    translation_placeholders:
+      x: '6'
+  - category: config
+    dps:
+      - id: 9
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '1'
+  - category: config
+    dps:
+      - id: 10
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '2'
+  - category: config
+    dps:
+      - id: 11
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '3'
+  - category: config
+    dps:
+      - id: 12
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '4'
+  - category: config
+    dps:
+      - id: 13
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '5'
+  - category: config
+    dps:
+      - id: 14
+        name: second
+        range:
+          max: 86400
+          min: 0
+        type: integer
+    entity: time
+    translation_key: timer_x
+    translation_placeholders:
+      x: '6'
+  - category: config
+    dps:
+      # relay_status: which way the six relays come up after power is
+      # restored. Tuya's standard instruction set for the category
+      # names these power_off, power_on and last, but the device's own
+      # enum is off, on and memory, and memory is what arrives over the
+      # local protocol. The standard names would match nothing.
+      - id: 38
+        mapping:
+          - dps_val: memory
+            value: memory
+          - dps_val: 'off'
+            value: 'off'
+          - dps_val: 'on'
+            value: 'on'
+        name: option
+        type: string
+    entity: select
+    translation_key: initial_state
+  - category: config
+    dps:
+      # cycle_time, an encoded repeating schedule the vendor app writes
+      # and documents nowhere. Registered disabled: nothing here can
+      # decode it, and it reads as an empty string until the app sets
+      # one.
+      - id: 42
+        name: value
+        optional: true
+        type: string
+    entity: text
+    hidden: true
+    translation_key: schedule
+# Six outlets switched individually, each with its own countdown, plus
+# a power-restore setting shared across all of them. Upstream's
+# simple_six_switch covers dps 1-6 and 9-14 but nothing else, and
+# presents the outlets as bare switches, which loses the outlet device
+# class that makes them read as sockets rather than as relays.
+name: 6 outlet surge protector
+products:
+  - id: x4yh83qudmsr6wat
+    manufacturer: iHome
+    model: SW007
