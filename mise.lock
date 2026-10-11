@@ -149,7 +149,7 @@ version = "1.0.0"
 backend = "npm:@gtbuchanan/cli"
 
 [[tools."npm:renovate"]]
-version = "44.97.2"
+version = "44.149.3"
 backend = "npm:renovate"
 
 [tools."npm:renovate".options]
