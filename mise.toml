@@ -70,7 +70,7 @@ node = "24.21.0"
 # moment a different release is resolved, instead of standing forever.
 "npm:renovate" = { trust_policy_excludes = [
   "@yarnpkg/libzip@3.2.2",
-], version = "44.97.2" }
+], version = "44.149.3" }
 pkl = "0.32.1"
 pnpm = "12.4.2"
 python = "3.14.7"
