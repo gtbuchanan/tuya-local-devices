@@ -61,7 +61,7 @@ description = "Run all tiers: compile + every test tier"
 actionlint = "1.7.12"
 hk = "2.0.0"
 jq = "1.8.2"
-node = "24.21.0"
+node = "26.13.0"
 "npm:@gtbuchanan/cli" = "1.0.0"
 # Exempt transitive `@yarnpkg/libzip@3.2.2` from the no-downgrade trust policy:
 # it is a benign manual publish missing the provenance attestation its CI-built
