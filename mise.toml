@@ -58,8 +58,8 @@ description = "Run all tiers: compile + every test tier"
 # drives the hk:* tasks, renovate supplies its config validator). python + jq
 # drive the device-config build/validation tasks.
 [tools]
-actionlint = "1.7.12"
 hk = "2.11.0"
+jactionlint = "v2.4.0"
 jq = "1.8.2"
 node = "26.13.0"
 "npm:@gtbuchanan/cli" = "1.0.0"
