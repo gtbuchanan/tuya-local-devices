@@ -72,7 +72,7 @@ node = "26.13.0"
   "@yarnpkg/libzip@3.2.2",
 ], version = "44.219.0" }
 pkl = "0.32.1"
-pnpm = "12.16.1"
+pnpm = "12.17.0"
 python = "3.15.2"
 shellcheck = "0.11.0"
 shfmt = "3.14.1"
