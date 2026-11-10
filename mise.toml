@@ -71,7 +71,7 @@ node = "26.13.0"
 "npm:renovate" = { trust_policy_excludes = [
   "@yarnpkg/libzip@3.2.2",
 ], version = "44.219.0" }
-pkl = "0.32.1"
+pkl = "0.33.0"
 pnpm = "12.18.0"
 python = "3.15.2"
 shellcheck = "0.11.0"
