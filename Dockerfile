@@ -6,7 +6,7 @@
 # manifest land in the image, so the dependency layer is cached and rebuilds
 # only when the upstream release changes; the merged tree is mounted at run
 # time (see the test-docker task), so a device-file edit just re-runs pytest.
-FROM python:3.14
+FROM python:3.15
 
 WORKDIR /deps
 COPY pyproject.toml ./
