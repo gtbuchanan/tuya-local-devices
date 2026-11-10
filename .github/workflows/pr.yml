@@ -7,7 +7,7 @@ jobs:
   pre-commit:
     name: Pre-Commit
     # The pre-commit eslint step shells out to `pnpm exec`, so it needs node_modules.
-    uses: gtbuchanan/tooling/.github/workflows/pre-commit.yml@v1.0.0
+    uses: gtbuchanan/tooling/.github/workflows/pre-commit.yml@cc8db05d356667bcff53d990ecee5a96a527f03c # v1.0.0
     with:
       use-pnpm: true
 name: PR
