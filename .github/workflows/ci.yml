@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: gtbuchanan/tooling/.github/actions/mise-setup@v1.0.0
+      - uses: gtbuchanan/tooling/.github/actions/mise-setup@cc8db05d356667bcff53d990ecee5a96a527f03c # v1.0.0
       - env:
           # compile authenticates its upstream-release lookup with this, so a
           # shared runner IP's spent anonymous rate limit cannot fail the build.
