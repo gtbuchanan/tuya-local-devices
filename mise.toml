@@ -62,7 +62,7 @@ hk = "2.11.0"
 jactionlint = "v2.4.0"
 jq = "1.8.2"
 node = "26.13.0"
-"npm:@gtbuchanan/cli" = "2.0.0"
+"npm:@gtbuchanan/cli" = "2.1.0"
 # Exempt transitive `@yarnpkg/libzip@3.2.2` from the no-downgrade trust policy:
 # it is a benign manual publish missing the provenance attestation its CI-built
 # predecessor (3.2.0) had, which otherwise fails the install outright. Pinned to
