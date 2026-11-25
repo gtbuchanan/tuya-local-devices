@@ -3,6 +3,7 @@
 [[tools.hk]]
 version = "2.11.1"
 backend = "packslip:github.com/jdx/hk"
+unsupported_platforms = ["macos-x64"]
 
 [tools.hk."platforms.linux-arm64"]
 checksum = "sha256:b94d3b405a9e392d0286491693fd22386d3c5be086bf4b8698df33623bfe91a9"
