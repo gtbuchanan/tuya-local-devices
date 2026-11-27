@@ -156,7 +156,7 @@ version = "2.1.0"
 backend = "npm:@gtbuchanan/cli"
 
 [[tools."npm:renovate"]]
-version = "44.219.0"
+version = "44.264.1"
 backend = "npm:renovate"
 
 [tools."npm:renovate".options]
